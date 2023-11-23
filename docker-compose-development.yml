@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+  backend-service:
+    # Le asigna el nombre de backend-app:prod a la imagen -t
+    # image: backend-app:prod
+    # Construye la imagen con docker-compose
+    build: 
+      context: ./law-firm-ev-backend
+      dockerfile: ./docker/development.Dockerfile # -f
+    # Utiliza el archivo .env para las variables de entorno
+    env_file:
+      - ./law-firm-ev-backend/.env
+    # Nombre del contenedor --name
+    container_name: bevdev
+    # Nombre del host para que se pueda comunicar otros contenedores en vez de usar la ip
+    hostname: bevdev
+    # Se reiniciará a menos que se detenga
+    # restart: unless-stopped
+    # Puerto de la aplicación
+    ports:
+      - 3330:3330
+    networks:
+      - backend-net
+    command: npm run dev
+
+  frontend-service:
+    # Le asigna el nombre de frontend-app:prod a la imagen -t
+    # image: frontend-app:prod
+    # Construye la imagen con docker-compose
+    build: 
+      context: ./law-firm-ev-frontend
+      dockerfile: ./docker/development.Dockerfile # -f
+    # Nombre del contenedor --name
+    container_name: fevdev
+    # Nombre del host para que se pueda comunicar otros contenedores en vez de usar la ip
+    hostname: fevdev
+    # Se reiniciará a menos que se detenga
+    restart: unless-stopped
+    # Puerto de la aplicación
+    ports:
+      - 4600:4200
+    networks:
+      - frontend-net
+    depends_on:
+      - backend-service
+    command: npm start
+    # volumes:
+    #   - ./law-firm-ev-frontend:/app
+    #   - /app/node_modules
+networks:
+  backend-net:
+
+  frontend-net:
