@@ -2,7 +2,9 @@ version: '3'
 
 services:
   node-service:
-    image: node:18-alpine
+    # image: node:18-alpine
+    build:
+      context: ./law-firm-ev-node
     container_name: node
     networks:
       - backend-net
