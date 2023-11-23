@@ -1,19 +1,20 @@
-version: '3.8'
+version: '3'
 
 services:
   node-service:
-    build:
-      context: ./law-firm-ev-node
-    image: node-app:prod
+    image: node:18-alpine
     container_name: node
+    networks:
+      - backend-net
+      - frontend-net
 
   backend-service:
+    # Le asigna el nombre de backend-app:prod a la imagen -t
+    # image: backend-app:prod
     # Construye la imagen con docker-compose
     build: 
       context: ./law-firm-ev-backend
       dockerfile: ./docker/production.Dockerfile # -f
-    # Le asigna el nombre de backend-app:prod a la imagen -t
-    # image: backend-app:prod
     # Utiliza el archivo .env para las variables de entorno
     env_file:
       - ./law-firm-ev-backend/.env
@@ -35,12 +36,12 @@ services:
     command: npm start
 
   frontend-service:
+    # Le asigna el nombre de frontend-app:prod a la imagen -t
+    # image: frontend-app:prod
     # Construye la imagen con docker-compose
     build: 
       context: ./law-firm-ev-frontend
       dockerfile: ./docker/production.Dockerfile # -f
-    # Le asigna el nombre de frontend-app:prod a la imagen -t
-    # image: frontend-app:prod
     # Nombre del contenedor --name
     container_name: fevprod
     # Nombre del host para que se pueda comunicar otros contenedores en vez de usar la ip
@@ -60,9 +61,9 @@ services:
     command: npm run serve:ssr
 
   nginx-service:
+    # image: nginx-app:prod
     build:
       context: ./law-firm-ev-nginx
-    # image: nginx-app:prod
     container_name: nginx
     restart: unless-stopped
     ports:
@@ -73,6 +74,7 @@ services:
       - ./law-firm-ev-nginx/certbot/conf:/etc/letsencrypt
       - ./law-firm-ev-nginx/certbot/www:/var/www/certbot
     depends_on:
+      - node-service
       - backend-service
       - frontend-service
     networks:
@@ -94,6 +96,7 @@ services:
       - nginx-service
     networks:
       - backend-net
+      - frontend-net
 networks:
   backend-net:
 
