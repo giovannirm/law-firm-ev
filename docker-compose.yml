@@ -1,13 +1,14 @@
 version: '3.8'
 
 services:
-  node-service:
-    build:
-      context: ./law-firm-ev-node
-    container_name: node
-    networks:
-      - backend-net
-      - frontend-net
+  # node-service:
+  #   image: custom-node:latest
+  #   build:
+  #     context: ./law-firm-ev-node
+  #   container_name: node
+  #   networks:
+  #     - backend-net
+  #     - frontend-net
 
   backend-service:
     build:
@@ -18,12 +19,13 @@ services:
     container_name: bevprod
     hostname: bevprod
     restart: unless-stopped
-    depends_on:
-      - node-service
     expose:
       - 3333
     networks:
       - backend-net
+    # depends_on:
+    #   - node-service
+    # command: ['/usr/local/bin/wait-for-it.sh', '--timeout=60', 'node-service', '--', 'npm', 'start']
     command: npm start
 
   frontend-service:
@@ -33,12 +35,13 @@ services:
     container_name: fevprod
     hostname: fevprod
     restart: unless-stopped
-    depends_on:
-      - backend-service
     expose:
       - 4000
     networks:
       - frontend-net
+    depends_on:
+      - backend-service
+    # command: ['/usr/local/bin/wait-for-it.sh', '--timeout=60', 'node-service', '--', 'npm', 'run', 'serve:ssr']
     command: npm run serve:ssr
 
   nginx-service:
@@ -53,9 +56,11 @@ services:
       - ./law-firm-ev-nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./law-firm-ev-nginx/certbot/conf:/etc/letsencrypt
       - ./law-firm-ev-nginx/certbot/www:/var/www/certbot
+      - ./law-firm-ev-frontend/dist:/usr/share/nginx/html # Monta la carpeta de archivos estáticos de Angular
     depends_on:
       - backend-service
       - frontend-service
+    # command: ['/usr/local/bin/wait-for-it.sh', '--timeout=60', 'backend-service:3333', '--', '/usr/local/bin/wait-for-it.sh', '--timeout=60', 'frontend-service:4000']
     networks:
       - backend-net
       - frontend-net
@@ -66,9 +71,9 @@ services:
     volumes:
       - ./law-firm-ev-nginx/certbot/conf:/etc/letsencrypt
       - ./law-firm-ev-nginx/certbot/www:/var/www/certbot
-    command: certonly --webroot -w /var/www/certbot --email giovannirm.python@gmail.com --agree-tos --no-eff-email --staging -d api.bufetevaldivieso.com -d www.api.bufetevaldivieso.com
-    depends_on:
-      - nginx-service
+    # command: >
+      # sh -c /usr/local/bin/wait-for-it.sh --timeout=60 nginx-service:80 -- /usr/local/bin/wait-for-it.sh nginx-service:443 -- certonly --webroot -w /var/www/certbot --email giovannirm.python@gmail.com --agree-tos --no-eff-email --staging -d api.bufetevaldivieso.com -d www.api.bufetevaldivieso.com
+    command: certonly --webroot -w /var/www/certbot --force-renewal --email giovannirm.python@gmail.com -d api.bufetevaldivieso.com -d www.api.bufetevaldivieso.com -d bufetevaldivieso.com -d www.bufetevaldivieso.com --agree-tos --no-eff-email
     networks:
       - backend-net
       - frontend-net

@@ -1,14 +1,14 @@
 version: '3.8'
 
 services:
-  node-service:
-    # image: node:18-alpine
-    build:
-      context: ./law-firm-ev-node
-    container_name: node
-    networks:
-      - backend-net
-      - frontend-net
+  # node-service:
+  #   image: custom-node:latest
+  #   build:
+  #     context: ./law-firm-ev-node
+  #   container_name: node
+  #   networks:
+  #     - backend-net
+  #     - frontend-net
 
   backend-service:
     # Le asigna el nombre de backend-app:prod a la imagen -t
@@ -26,13 +26,13 @@ services:
     hostname: bevprod
     # Se reiniciará a menos que se detenga
     restart: unless-stopped
-    depends_on:
-      - node-service
-    # Puerto de la aplicación
     expose:
       - 3333
     # ports:
     #   - 3333:3333
+    depends_on:
+      - node-service
+    # Puerto de la aplicación
     networks:
       - backend-net
     command: npm start
@@ -50,8 +50,6 @@ services:
     hostname: fevprod
     # Se reiniciará a menos que se detenga
     restart: unless-stopped
-    depends_on:
-      - backend-service
     # Puerto de la aplicación
     expose:
       - 4000
@@ -59,6 +57,8 @@ services:
     #   - 4000:4000
     networks:
       - frontend-net
+    depends_on:
+      - backend-service
     command: npm run serve:ssr
 
   nginx-service:
@@ -74,6 +74,7 @@ services:
       - ./law-firm-ev-nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./law-firm-ev-nginx/certbot/conf:/etc/letsencrypt
       - ./law-firm-ev-nginx/certbot/www:/var/www/certbot
+      - ./law-firm-ev-frontend/dist:/usr/share/nginx/html # Monta la carpeta de archivos estáticos de Angular
     depends_on:
       - backend-service
       - frontend-service
@@ -92,9 +93,7 @@ services:
     # --no-eff-email no envia correos electronicos
     # --staging Esto le indica a Certbot que le gustaría utilizar el entorno de prueba de Let's Encrypt para obtener certificados de prueba. El uso de esta opción le permite probar sus opciones de configuración y evitar posibles límites de solicitud de dominio.
     # --force-renewal Esto le indicará a Certbot que desea solicitar un nuevo certificado con los mismos dominios que un certificado existente.
-    command: certonly --webroot -w /var/www/certbot --email giovannirm.python@gmail.com --agree-tos --no-eff-email --staging -d api.bufetevaldivieso.com -d www.api.bufetevaldivieso.com
-    depends_on:
-      - nginx-service
+    command: certonly --webroot -w /var/www/certbot --force-renewal --email giovannirm.python@gmail.com -d api.bufetevaldivieso.com -d www.api.bufetevaldivieso.com -d bufetevaldivieso.com -d www.bufetevaldivieso.com --agree-tos --no-eff-email
     networks:
       - backend-net
       - frontend-net
