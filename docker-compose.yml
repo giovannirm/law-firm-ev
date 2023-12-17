@@ -73,7 +73,7 @@ services:
       - ./law-firm-ev-nginx/certbot/www:/var/www/certbot
     # command: >
       # sh -c /usr/local/bin/wait-for-it.sh --timeout=60 nginx-service:80 -- /usr/local/bin/wait-for-it.sh nginx-service:443 -- certonly --webroot -w /var/www/certbot --email giovannirm.python@gmail.com --agree-tos --no-eff-email --staging -d api.bufetevaldivieso.com -d www.api.bufetevaldivieso.com
-    command: certonly --webroot -w /var/www/certbot --force-renewal --email giovannirm.python@gmail.com -d api.bufetevaldivieso.com -d www.api.bufetevaldivieso.com -d bufetevaldivieso.com -d www.bufetevaldivieso.com --agree-tos --no-eff-email
+    command: certonly --webroot -w /var/www/certbot --force-renewal --email giovannirm.python@gmail.com -d bufetevaldivieso.com -d www.bufetevaldivieso.com -d api.bufetevaldivieso.com -d www.api.bufetevaldivieso.com --agree-tos --no-eff-email
     networks:
       - backend-net
       - frontend-net
